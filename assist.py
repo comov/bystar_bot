@@ -29,8 +29,9 @@ def send_text(message):
             audio = _file.read()
         # Отправка
         bot.send_audio(message.chat.id, audio=audio)
-    elif message.text == 'ясно!!!':
-        bot.send_sticker(message.chat.id, 'CAACAgIAAxkBAAMhXrEiC5rUiGT-ceiKkmiwjJou1xIAAg8DAAJtsEIDDrRMZLudXUYZBA')
+    elif message.text == 'ясно!!!':  # Кнопка 'ясно!!!' должна отправлять стикер
+        sticker = 'CAACAgIAAxkBAAMhXrEiC5rUiGT-ceiKkmiwjJou1xIAAg8DAAJtsEIDDrRMZLudXUYZBA'
+        bot.send_sticker(message.chat.id, sticker)
 
 
 bot.polling()
