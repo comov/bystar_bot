@@ -59,16 +59,17 @@ def callback_inline(call: types.CallbackQuery):
             serial_info = get_episode_info(get_serial_html_info(link))
             keyboard = types.InlineKeyboardMarkup()
             serial_id = serials_id[call.data]
-            keyboard.add(types.InlineKeyboardButton(text='Создать оповещение',
-                                                    callback_data=f'add_notification:{serial_id}',
-                                                    ))
+            keyboard.add(types.InlineKeyboardButton(
+                text='Создать оповещение',
+                callback_data=f'add_notification:{serial_id}',
+            ))
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 text=f'Для сериала "{call.data}", {serial_info}',
                 message_id=call.message.message_id,
                 reply_markup=keyboard,
             )
-        elif call.data == 'add_notification:1' or call.data == 'add_notification:2':
+        elif call.data.lower().startswith('add_notification:'):
             serial_id = int(call.data[-1])
             keyboard = types.InlineKeyboardMarkup()
             for i in ['За час до выхода', 'За пол часа до выхода']:
@@ -79,7 +80,7 @@ def callback_inline(call: types.CallbackQuery):
                 message_id=call.message.message_id,
                 reply_markup=keyboard,
             )
-        elif call.data == 'notify:1' or call.data == 'notify:2':
+        elif call.data.lower().startwith('notify:'):
             add_task(link, call.message)
             bot.answer_callback_query(call.id, text="Оповещение создано!")
             serial_id = int(call.data[-1])
