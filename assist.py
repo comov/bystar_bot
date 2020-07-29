@@ -18,7 +18,7 @@ bot = TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_command(message: types.Message):
     main_keyboard = types.ReplyKeyboardMarkup()
-    main_keyboard.row('Поиск', 'Конец', 'Посмотреть список всех сериалов много через комнаду /show')
+    main_keyboard.row('Поиск', 'Конец',)
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start', reply_markup=main_keyboard)
 
 
@@ -121,8 +121,6 @@ def receive_message(message: types.Message):
             audio = _file.read()
         # Отправка
         bot.send_audio(message.chat.id, audio=audio)
-    elif message.text.lower() == 'посмотреть список всех сериалов много через комнаду /show':
-        bot.send_sticker(message.chat.id, 'CAACAgUAAxkBAAEBHZBfIVhyCG9qxYcczZSbaYgTeo59NwACtBoAAsZRxhU9mBXY6JGNpxoE')
 
 
 if __name__ == '__main__':
