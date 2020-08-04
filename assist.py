@@ -25,9 +25,9 @@ def start_command(message: types.Message):
 @bot.message_handler(commands=['show'])
 def show_command(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
-    for serial_name, _ in serials.items():  # type: str
-        keyboard.add(types.InlineKeyboardButton(text=serial_name, callback_data=f'serial:{serial_name}'))
-    bot.send_message(message.chat.id, "Список сериалов:", reply_markup=keyboard)
+    for serial_id, serial in serials.items():  # type: int, dict
+        keyboard.add(types.InlineKeyboardButton(text=serial['name'], callback_data=f'serial:{serial_id}'))
+    bot.send_message(message.chat.id, "Список сериалов которые выходят на данный момент:", reply_markup=keyboard)
 
 
 # @bot.message_handler(commands=['test'])
@@ -37,61 +37,88 @@ def show_command(message: types.Message):
 #     keyboard.add(types.InlineKeyboardButton(text=f, callback_data=f'{f}'))
 # bot.send_message(message.chat.id, 'Как дела?', reply_markup=keyboard)
 
-serials_id = {
-    'Боруто: Новое поколение Наруто': 1,
-    'Мастера Меча': 2,
-}
-serials_id_revert = {
-    1: 'Боруто: Новое поколение Наруто',
-    2: 'Мастера Меча',
+
+time_notify = {
+        1: 'За час до выхода',
+        2: 'За пол часа до выхода',
+    }
+
+
+def add_notification(call, serial_id):
+    keyboard = types.InlineKeyboardMarkup()
+    for time in time_notify:
+        keyboard.add(types.InlineKeyboardButton(text=time_notify[time],
+                                                callback_data=f'create_notification:{serial_id}',
+                                                ))
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        text=f'Оповестить за: ',
+        message_id=call.message.message_id,
+        reply_markup=keyboard,
+    )
+
+
+def get_serial_info(call, serial_id):
+    serial = serials[serial_id]
+    serial_info = get_episode_info(get_serial_html_info(serial['url']))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(
+        text='Создать оповещение',
+        callback_data=f'add_notification:{call.data}',
+    ))
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        text=f'Для сериала "{serial["name"]}", {serial_info}',
+        message_id=call.message.message_id,
+        reply_markup=keyboard,
+    )
+
+
+def create_notification(call, serial_id):
+    serial = serials[serial_id]
+    add_task(serial['url'], call.message)
+    bot.answer_callback_query(call.id, text="Оповещение создано!")
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Изменить оповещение', callback_data=f'edit_notification:{serial_id}'))
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        text=serial['name'],
+        message_id=call.message.message_id,
+        reply_markup=keyboard,
+    )
+
+
+def completion_of_changes(call, serial_id):
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(
+        text='Конец!',
+        callback_data=f'notify_end:{serial_id}',
+    ))
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        text=f'Оповещение изменено!',
+        message_id=call.message.message_id,
+        reply_markup=keyboard,
+    )
+
+
+callbacks = {
+    'add_notification': add_notification,
+    'edit_notification': add_notification,
+    'serial': get_serial_info,
+    'create_notification': create_notification,
+    'completion_of_changes': completion_of_changes,
 }
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call: types.CallbackQuery):
     if call.message:
-        link = serials.get(call.data)
-        # if call.data == 'Хорошо':
-        #     bot.send_message(call.message.chat.id, 'Вот и хорошо')
-        # if call.data == 'Плохо':
-        #     bot.send_message(call.message.chat.id, 'Сочувствую')
-        if link:
-            serial_info = get_episode_info(get_serial_html_info(link))
-            keyboard = types.InlineKeyboardMarkup()
-            serial_id = serials_id[call.data]
-            keyboard.add(types.InlineKeyboardButton(
-                text='Создать оповещение',
-                callback_data=f'add_notification:{serial_id}',
-            ))
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                text=f'Для сериала "{call.data}", {serial_info}',
-                message_id=call.message.message_id,
-                reply_markup=keyboard,
-            )
-        elif call.data.lower().startswith('add_notification:'):
-            serial_id = int(call.data[-1])
-            keyboard = types.InlineKeyboardMarkup()
-            for i in ['За час до выхода', 'За пол часа до выхода']:
-                keyboard.add(types.InlineKeyboardButton(text=i, callback_data=f'notify:{serial_id}'))
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                text=f'Оповестить за: ',
-                message_id=call.message.message_id,
-                reply_markup=keyboard,
-            )
-        elif call.data.lower().startwith('notify:'):
-            add_task(link, call.message)
-            bot.answer_callback_query(call.id, text="Оповещение создано!")
-            serial_id = int(call.data[-1])
-            keyboard = types.InlineKeyboardMarkup()
-            keyboard.add(types.InlineKeyboardButton(text='Изменить оповещение', callback_data=f'notify:{serial_id}'))
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                text=serials_id_revert[serial_id],
-                message_id=call.message.message_id,
-                reply_markup=keyboard,
-            )
+        call_back_params = call.data.split(':')
+        print(call_back_params)
+        call_back_key = call_back_params[0]
+        call_back_func = callbacks[call_back_key]
+        call_back_func(call, int(call_back_params[-1]))
 
 
 wait_messages = {}
@@ -99,10 +126,10 @@ wait_messages = {}
 
 def find_serials(search_text: str) -> Union[types.InlineKeyboardMarkup, None]:
     keyboard = types.InlineKeyboardMarkup()
-    for serial_name, _ in serials.items():
+    for serial_id, serial in serials.items():
         # if search_text.lower() in serial_name.lower():
-        if serial_name.lower().startswith(search_text.lower()):
-            keyboard.add(types.InlineKeyboardButton(text=serial_name, callback_data=f'{serial_name}'))
+        if serial['name'].lower().startswith(search_text.lower()):
+            keyboard.add(types.InlineKeyboardButton(text=serial['name'], callback_data=f'serial:{serial_id}'))
     return keyboard if keyboard.keyboard else None
 
 

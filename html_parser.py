@@ -3,14 +3,95 @@ from bs4 import BeautifulSoup
 
 serial_base_url = 'https://animego.org'
 
+
 serials = {
-    'Боруто: Новое поколение Наруто': f'{serial_base_url}/anime/boruto-novoe-pokolenie-naruto-70',
-    'Мастера Меча': f'{serial_base_url}/anime/mastera-mecha-onlayn-alisizaciya-voyna-v-podmire-2-1464',
+    1: {
+        'name': 'Жизнь без оружия 2',
+        'url': '/anime/zhizn-bez-oruzhiya-2-1583',
+    },
+    2: {
+        'name': 'Любовь и продюсер',
+        'url': '/anime/lyubov-i-prodyuser-1594',
+    },
+    3: {
+        'name': 'Невеста титана',
+        'url': '/anime/nevesta-titana-1593',
+    },
+    4: {
+        'name': 'Пламенная бригада пожарных 2',
+        'url': '/anime/plamennaya-brigada-pozharnyh-2-1586',
+    },
+    5: {
+        'name': 'Как и ожидалось, моя школьная романтическая жизнь не удалась 3',
+        'url': '/anime/kak-i-ozhidalos-moya-shkolnaya-romanticheskaya-zhizn-ne-udalas-3-1591',
+    },
+    6: {
+        'name': 'Удзаки хочет тусоваться!',
+        'url': '/anime/udzaki-hochet-tusovatsya-1590',
+    },
+    7: {
+        'name': 'Непризнанный школой владыка демонов',
+        'url': '/anime/nepriznannyy-shkoloy-vladyka-demonov-silneyshiy-vladyka-demonov-'
+               'v-istorii-postupaet-v-akademiyu-pererodivshis-svoim-potomkom-1584',
+    },
+    8: {
+        'name': 'Питер Грилл и время мудреца',
+        'url': '/anime/piter-grill-i-vremya-mudreca-1587',
+    },
+    9: {
+        'name': 'Джибиэйт',
+        'url': '/anime/dzhibieyt-1581',
+    },
+    10: {
+        'name': 'Доктор для девушек-монстров',
+        'url': '/anime/doktor-dlya-devushek-monstrov-1580',
+    },
+    11: {
+        'name': 'Девушка на час',
+        'url': '/anime/devushka-na-chas-1579',
+    },
+    12: {
+        'name': 'Бог старшей школы',
+        'url': '/anime/bog-starshey-shkoly-1578',
+    },
+    13: {
+        'name': 'Дека-данс',
+        'url': '/anime/deka-dans-1577',
+    },
+    14: {
+        'name': 'Бюро паранормальных расследований Мухё и Родзи 2',
+        'url': '/anime/byuro-paranormalnyh-rassledovaniy-muhe-i-rodzi-2-1576',
+    },
+    15: {
+        'name': 'Лазурные огни',
+        'url': '/anime/lazurnye-ogni-1575',
+    },
+    16: {
+        'name': 'Формирование извращённой силы',
+        'url': '/anime/formirovanie-izvraschennoy-sily-1574',
+    },
+    17: {
+        'name': 'Re: Жизнь в альтернативном мире с нуля 2',
+        'url': '/anime/rezero-zhizn-s-nulya-v-alternativnom-mire-2-1569',
+    },
+    18: {
+        'name': 'Мастера Меча Онлайн: Алисизация — Война в Подмирье 2',
+        'url': '/anime/mastera-mecha-onlayn-alisizaciya-voyna-v-podmire-2-1464',
+    },
+    19: {
+        'name': 'Боруто: Новое поколение Наруто',
+        'url': '/anime/boruto-novoe-pokolenie-naruto-70',
+    },
+    20: {
+        'name': 'Чёрный клевер',
+        'url': '/anime/chernyy-klever-27',
+    },
 }
 
 
-def get_serial_html_info(serial_url: str) -> str:
+def get_serial_html_info(serial_path: str) -> str:
     # получаем страницу с сериалом
+    serial_url = serial_base_url + serial_path
     response = requests.get(serial_url)
     if response.status_code != 200:
         print(f'Response from {serial_url} return {response.status_code}')
