@@ -18,7 +18,7 @@ bot = TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_command(message: types.Message):
     main_keyboard = types.ReplyKeyboardMarkup()
-    main_keyboard.row('Поиск', 'Конец',)
+    main_keyboard.row('Поиск', 'Конец', 'Сайт')
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start', reply_markup=main_keyboard)
 
 
@@ -149,6 +149,9 @@ def receive_message(message: types.Message):
             audio = _file.read()
         # Отправка
         bot.send_audio(message.chat.id, audio=audio)
+    elif message.text.lower() == 'сайт':
+        wait_messages[message.chat.id] = True
+        bot.send_message(message.chat.id, 'https://animego.org/')
 
 
 if __name__ == '__main__':
